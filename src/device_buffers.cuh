@@ -25,7 +25,7 @@ class DeviceBuffers {
         gpus_(gpus) {
 #pragma omp parallel for
     for (size_t i = 0; i < gpus.size(); ++i) {
-      CheckCudaError(cudaSetDevice(gpus[i]));
+      CheckCudaError(hipSetDevice(gpus[i]));
 
       const size_t add_thrust_overhead = 128000000;
 
@@ -54,9 +54,9 @@ class DeviceBuffers {
         host_allocators_[i].Malloc(sizeof(size_t));
       }
 
-      CheckCudaError(cudaStreamCreateWithFlags(&streams_[i][0], cudaStreamNonBlocking));
-      CheckCudaError(cudaStreamCreateWithFlags(&streams_[i][1], cudaStreamNonBlocking));
-      CheckCudaError(cudaStreamCreateWithFlags(&streams_[i][2], cudaStreamNonBlocking));
+      CheckCudaError(hipStreamCreateWithFlags(&streams_[i][0], hipStreamNonBlocking));
+      CheckCudaError(hipStreamCreateWithFlags(&streams_[i][1], hipStreamNonBlocking));
+      CheckCudaError(hipStreamCreateWithFlags(&streams_[i][2], hipStreamNonBlocking));
     }
 
     for (size_t i = 0; i < gpus.size(); ++i) {
@@ -70,7 +70,7 @@ class DeviceBuffers {
   ~DeviceBuffers() {
 #pragma omp parallel for
     for (size_t i = 0; i < gpus_.size(); ++i) {
-      CheckCudaError(cudaSetDevice(gpus_[i]));
+      CheckCudaError(hipSetDevice(gpus_[i]));
 
       buffers_[i][0].clear();
       buffers_[i][0].shrink_to_fit();
@@ -80,9 +80,9 @@ class DeviceBuffers {
       device_allocators_[i].Free();
       host_allocators_[i].Free();
 
-      CheckCudaError(cudaStreamDestroy(streams_[i][0]));
-      CheckCudaError(cudaStreamDestroy(streams_[i][1]));
-      CheckCudaError(cudaStreamDestroy(streams_[i][2]));
+      CheckCudaError(hipStreamDestroy(streams_[i][0]));
+      CheckCudaError(hipStreamDestroy(streams_[i][1]));
+      CheckCudaError(hipStreamDestroy(streams_[i][2]));
     }
   }
 
@@ -106,11 +106,11 @@ class DeviceBuffers {
 
   HostAllocator* GetHostAllocator(int i) { return &host_allocators_[partitions_[i]]; }
 
-  cudaStream_t* GetPrimaryStream(int i) { return &streams_[partitions_[i]][0]; }
+  hipStream_t* GetPrimaryStream(int i) { return &streams_[partitions_[i]][0]; }
 
-  cudaStream_t* GetSecondaryStream(int i) { return &streams_[partitions_[i]][1]; }
+  hipStream_t* GetSecondaryStream(int i) { return &streams_[partitions_[i]][1]; }
 
-  cudaStream_t* GetTemporaryStream(int i) { return &streams_[partitions_[i]][2]; }
+  hipStream_t* GetTemporaryStream(int i) { return &streams_[partitions_[i]][2]; }
 
   int GetPartition(int i) { return partitions_[i]; }
 
@@ -125,7 +125,7 @@ class DeviceBuffers {
   std::vector<DeviceAllocator> device_allocators_;
   std::vector<HostAllocator> host_allocators_;
 
-  std::vector<std::array<cudaStream_t, 3>> streams_;
+  std::vector<std::array<hipStream_t, 3>> streams_;
 
   std::map<int, int> partitions_;
   size_t partition_count_;

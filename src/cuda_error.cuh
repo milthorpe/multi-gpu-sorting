@@ -9,9 +9,9 @@
 #define CheckCudaError(instruction) instruction
 #endif
 
-inline void AssertNoCudaError(cudaError_t error_code, const char* file, int line) {
-  if (error_code != cudaSuccess) {
-    std::cout << "Error: " << cudaGetErrorString(error_code) << " " << file << " " << line << "\n";
+inline void AssertNoCudaError(hipError_t error_code, const char* file, int line) {
+  if (error_code != hipSuccess) {
+    std::cout << "Error: " << hipGetErrorString(error_code) << " " << file << " " << line << "\n";
 
     exit(error_code);
   }

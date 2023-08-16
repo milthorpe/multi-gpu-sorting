@@ -146,7 +146,7 @@ std::array<int, 2> SwapPartitions(DeviceBuffers<T>* device_buffers, size_t pivot
 }
 
 template <typename T>
-void MergeLocalPartitions(DeviceBuffers<T>* device_buffers, HostVector<T>* elements, size_t pivot,
+void MergeLocalPartitions(DeviceBuffers<T>* device_buffers, size_t pivot,
                           const std::array<int, 2>& devices_to_merge, const std::vector<int>& devices,
                           size_t num_fillers) {
   const size_t partition_size = device_buffers->GetPartitionSize();
@@ -174,13 +174,13 @@ void MergeLocalPartitions(DeviceBuffers<T>* device_buffers, HostVector<T>* eleme
 }
 
 template <typename T>
-void MergePartitions(DeviceBuffers<T>* device_buffers, HostVector<T>* elements, const std::vector<int>& devices,
+void MergePartitions(DeviceBuffers<T>* device_buffers, const std::vector<int>& devices,
                      size_t num_fillers) {
   if (devices.size() > 2) {
 #pragma omp parallel for
     for (size_t i = 0; i < 2; ++i) {
       MergePartitions(
-          device_buffers, elements,
+          device_buffers,
           {devices.begin() + (i * (devices.size() / 2)), devices.begin() + ((i + 1) * (devices.size() / 2))},
           num_fillers);
     }
@@ -189,14 +189,14 @@ void MergePartitions(DeviceBuffers<T>* device_buffers, HostVector<T>* elements, 
   const size_t pivot = FindPivot<T>(device_buffers, devices);
   if (pivot > 0) {
     const std::array<int, 2> devices_to_merge = SwapPartitions<T>(device_buffers, pivot, devices);
-    MergeLocalPartitions<T>(device_buffers, elements, pivot, devices_to_merge, devices, num_fillers);
+    MergeLocalPartitions<T>(device_buffers, pivot, devices_to_merge, devices, num_fillers);
   }
 
   if (devices.size() > 2) {
 #pragma omp parallel for
     for (size_t i = 0; i < 2; ++i) {
       MergePartitions(
-          device_buffers, elements,
+          device_buffers,
           {devices.begin() + (i * (devices.size() / 2)), devices.begin() + ((i + 1) * (devices.size() / 2))},
           num_fillers);
     }
@@ -275,7 +275,7 @@ void TanasicSort(HostVector<T>* elements, std::vector<int> gpus) {
 
   TimeDurations::Get()->Tic("merge_phase");
   if (gpus.size() > 1) {
-    MergePartitions(device_buffers, elements, gpus, num_fillers);
+    MergePartitions(device_buffers, gpus, num_fillers);
   }
   TimeDurations::Get()->Toc("merge_phase");
 

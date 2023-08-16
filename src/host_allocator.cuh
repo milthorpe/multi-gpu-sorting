@@ -9,12 +9,12 @@ struct HostAllocator {
 
   void Malloc(size_t num_bytes) {
     CheckCudaError(
-        cudaMallocHost(reinterpret_cast<void**>(&begin), sizeof(value_type) * num_bytes, cudaHostAllocMapped));
+        hipHostMalloc(reinterpret_cast<void**>(&begin), sizeof(value_type) * num_bytes, hipHostMallocMapped));
 
     capacity = sizeof(value_type) * num_bytes;
   }
 
-  void Free() { CheckCudaError(cudaFreeHost(begin)); }
+  void Free() { CheckCudaError(hipHostFree(begin)); }
 
   value_type* allocate(size_t num_bytes) {
     if (num_bytes > capacity) {

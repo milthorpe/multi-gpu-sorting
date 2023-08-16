@@ -21,7 +21,7 @@ struct DeviceAllocator {
     size_t aligned_num_bytes =
         num_bytes % kBytePadding == 0 ? num_bytes : num_bytes + (kBytePadding - num_bytes % kBytePadding);
 
-    CheckCudaError(cudaMalloc(reinterpret_cast<void**>(&begin_pointers[0]), sizeof(value_type) * aligned_num_bytes));
+    CheckCudaError(hipMalloc(reinterpret_cast<void**>(&begin_pointers[0]), sizeof(value_type) * aligned_num_bytes));
 
     next_pointer = begin_pointers[0];
 
@@ -49,10 +49,10 @@ struct DeviceAllocator {
 
   void Free() {
     if (begin_pointers[0] != nullptr) {
-      CheckCudaError(cudaFree(begin_pointers[0]));
+      CheckCudaError(hipFree(begin_pointers[0]));
     }
     if (begin_pointers[1] != nullptr) {
-      CheckCudaError(cudaFree(begin_pointers[1]));
+      CheckCudaError(hipFree(begin_pointers[1]));
     }
   }
 
