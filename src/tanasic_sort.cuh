@@ -1,4 +1,6 @@
 #pragma once
+#ifndef _TANASIC_SORT
+#define _TANASIC_SORT
 
 #include <omp.h>
 #include <thrust/merge.h>
@@ -297,3 +299,5 @@ void TanasicSort(HostVector<T>* elements, std::vector<int> gpus) {
   delete device_buffers;
   TimeDurations::Get()->Toc("memory_deallocation");
 }
+
+#endif // _TANASIC_SORT
