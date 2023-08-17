@@ -88,5 +88,5 @@ struct DeviceAllocator {
 
   size_t capacity = 0;
 
-  inline static constexpr size_t kBytePadding = 128;
+  static constexpr size_t kBytePadding = 128;
 };
