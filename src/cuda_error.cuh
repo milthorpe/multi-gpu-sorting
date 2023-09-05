@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <hip/hip_runtime.h> 
 
 #ifdef DEBUG
 #define CheckCudaError(instruction) \
